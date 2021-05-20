@@ -1,0 +1,82 @@
+---
+title: "Assignment 17"
+author: "Dilan Kusuma"
+date: "4/27/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r}
+library(tidyverse) # data manipulation
+library(cluster) # clustering algorithms
+library(factoextra)
+library(gridExtra)
+setwd("C:/Users/user/Desktop/KURSUS/DATA SETS")
+getwd()
+customer <- read.csv('customer_movie_rating.csv')
+head(customer)
+```
+```{r}
+customer <- na.omit(customer)
+customer <- scale(customer)
+head(customer)
+```
+```{r}
+graph <- kmeans(customer, centers = 5, nstart = 25)
+str(graph)
+```
+
+```{r}
+fviz_cluster(graph, data = customer)
+```
+```{r}
+customer %>%
+as_tibble() %>%
+mutate(cluster = graph$cluster,
+state = row.names(customer)) %>%
+ggplot(aes(Horror, Romcom, Action, Comedy, Fantasy, color =
+factor(cluster), label = state)) +
+geom_text()
+```
+
+```{r}
+graph2 <- kmeans(customer, centers = 2, nstart = 25)
+graph3 <- kmeans(customer, centers = 3, nstart = 25)
+graph4 <- kmeans(customer, centers = 4, nstart = 25)
+# plots to compare
+p2 <- fviz_cluster(graph2, geom = "point", data = customer) + ggtitle("Graph = 2")
+p3 <- fviz_cluster(graph3, geom = "point", data = customer) + ggtitle("Graph = 3")
+p4 <- fviz_cluster(graph4, geom = "point", data = customer) + ggtitle("Graph = 4")
+p5 <- fviz_cluster(graph, geom = "point", data = customer) + ggtitle("Graph = 5")
+library(gridExtra)
+grid.arrange(p2, p3, p4, p5, nrow = 2)
+```
+
+```{r}
+set.seed(123)
+fviz_nbclust(customer, kmeans, method = "wss")
+```
+```{r}
+set.seed(123)
+fviz_nbclust(customer, kmeans, method =
+"silhouette")
+```
+#Graph2 Divided the cluster effectively without any data collision and matches the elbow and silhoutte graph
+
+#Graph3 Also no data collision, but may prove to be ineffective
+
+#Graph4 We can plainly see that the data collide too much to the left side, while the 4th cluster remain untouched
+
+#Graph5 The data are proven to be too crowded resulting in harder understanding of the cluster, while there are 1 cluster that actualy can be separated alone
+
+
+# Conclusion : As the details explained above, we can derrive that graph2 is the best result for the K-means of the regarding data by using the elbow and silhoutte graph. As we can see that in the Graph2 the data does not collide with each other and can be easily understood, thus the data are being distributed effectively into 2 clusters.
